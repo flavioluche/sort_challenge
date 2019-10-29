@@ -21,6 +21,8 @@
      property =0;
      aux = preSort(resultMerge, property,propertyItem);
 
+     resultMerge = aux[1];
+     
      property++;
      propertyItem = '$total';
      aux = preSort(aux[0], property, propertyItem);
