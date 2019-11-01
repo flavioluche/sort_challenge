@@ -4,78 +4,81 @@
  *      File: 4.788ms 
  */
 
-const hierarchicalSort = (data, filterParam) => {
+const hierarchicalSort = (data, sortParam) => {
 
     let property = 0;
     let item = '$total';
     let propertyN = 0;
-    let aux = [];
     let resultArray = [];
-    let resultMerge = [];
-    let filterParamIndex = -1;
+    let returnMergeSort = [];
+    let returnPropertySort = [];
+    let returnSubPropertySort = [];
+    let refineSort = [];
+    let sortParamIndex = -1;
     let finder = data[0].split('|');
 
     propertyN = data[0].split('property').length - 1;
 
-    if (filterParam && filterParam.search(/\property/) == -1) {
-        filterParamIndex = finder.findIndex(element => element === filterParam);
+    if (sortParam && sortParam.search(/\property/) == -1) {
+        sortParamIndex = finder.findIndex(element => element === sortParam);
     }
 
-    if (filterParamIndex = -1) {
-        filterParamIndex = finder.findIndex(element => element === 'net_values');
+    if (sortParamIndex = -1) {
+        sortParamIndex = finder.findIndex(element => element === 'net_values');
     }
 
     resultArray.push(data[0]);
     data.splice(0, 1);
 
-    resultMerge = mergeSort(data, filterParamIndex);
+    returnMergeSort = mergeSort(data, sortParamIndex);
 
-    aux = propertySort(resultMerge, property, item);
+    returnPropertySort = propertySort(returnMergeSort, property, item);
 
-    aux[0].map(element => {
+    returnPropertySort[0].forEach(element => {
         resultArray.push(element);
     })
 
-    resultMerge = aux[1];
+    refineSort = returnPropertySort[1];
 
-    while (resultMerge[0] !== undefined) {
+    while (refineSort[0] !== undefined) {
 
-        item = resultMerge[0].split('|')[0];
+        item = refineSort[0].split('|')[0];
 
-        aux = subPropertySort(resultMerge, property, item, propertyN);
+        returnSubPropertySort = subPropertySort(refineSort, property, item, propertyN);
 
-        aux[0].map(element => {
+        returnSubPropertySort[0].forEach(element => {
             resultArray.push(element);
         })
 
-        resultMerge = aux[1];
+        refineSort = returnSubPropertySort[1];
     };
 
     return resultArray;
 
 }
 
-function propertySort(resultMerge, property, item) {
+function propertySort(data, property, item) {
 
-    let aux = [];
+    let returnItemToSort = [];
     let resultArray = [];
+    let dataToRefine = [];
 
-    aux = preSort(resultMerge, property, item);
+    returnItemToSort = itemToSort(data, property, item);
 
-    resultArray = aux[0];
-    resultMerge = aux[1];
+    resultArray = returnItemToSort[0];
+    dataToRefine = returnItemToSort[1];
 
-    return [resultArray, resultMerge];
+    return [resultArray, dataToRefine];
 
 }
 
-function preSort(resultMerge, property, item) {
+function itemToSort(data, property, item) {
 
     let result = [];
     let itensToRemove = [];
     let i = 0;
 
-    resultMerge.filter(element => {
+    data.forEach(element => {
 
         if (element.split('|')[property] === item) {
             result.push(element);
@@ -84,50 +87,53 @@ function preSort(resultMerge, property, item) {
         i++;
     })
 
-    itensToRemove.map(element => {
-        resultMerge.splice(element, 1);
+    itensToRemove.forEach(element => {
+        data.splice(element, 1);
     })
 
-    return [result, resultMerge];
+    return [result, data];
 }
 
-function subPropertySort(resultMerge, property, item, propertyN) {
+function subPropertySort(data, property, item, propertyN) {
 
-    let aux = [];
+    let returnPropertySort = [];
+    let returnItemToSort = [];
     let resultArray = [];
 
-    aux = propertySort(resultMerge, property, item);
+    returnPropertySort = propertySort(data, property, item);
 
-    resultMerge = aux[1];
+    data = returnPropertySort[1];
 
     for (let i = 1; i < propertyN; i++) {
 
         item = '$total';
 
-        aux = preSort(aux[0], i, item);
+        returnItemToSort = itemToSort(returnPropertySort[0], i, item);
 
-        aux[0].map(element => {
+        returnItemToSort[0].forEach(element => {
             resultArray.push(element);
         })
 
-        aux[0] = aux[1];
+        returnItemToSort[0] = returnItemToSort[1];
     }
 
-    aux[0].map(element => {
+    returnItemToSort[0].forEach(element => {
         resultArray.push(element);
     })
 
-    return [resultArray, resultMerge];
+    return [resultArray, data];
 
 }
 
 function mergeSort(array, filter) {
 
-    let halfArraySize = array.length / 2;
+    let halfArraySize = 0;
 
     if (array.length <= 1) {
         return array;
     }
+
+    halfArraySize = array.length / 2;
 
     const left = array.splice(0, halfArraySize);
     return merger(mergeSort(left, filter), mergeSort(array, filter), filter);
